@@ -1,0 +1,390 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+class UserData {
+    private int saldo;
+    public UserData(int saldo) {
+        this.saldo = saldo;
+    }
+    public int getSaldo() {
+        return saldo;
+    }
+    public void setSaldo(int saldo) {
+        this.saldo = saldo;
+    }
+}
+
+public class SistemAplikasi {
+    private JFrame Sistem;
+    private CardLayout Pengaturan;
+    private JPanel Aplikasi;
+    private UserData userData;
+    private JTextArea InfoUangPengguna;
+    private JTextArea MutasiRekening;
+    private List<String> ListTransaksi;
+
+    private String loggedInUsername;
+    private String loggedInPassword;
+
+    private JTextField UserUsername;
+    private JPasswordField UserPassword;
+
+    private static final String Password = "242024";
+
+    public void PenyetinganSistem() {
+        Sistem = new JFrame("Sistem Bank Angkatan 2024 dan Sistem Hasil Dividen");
+        Pengaturan = new CardLayout();
+        Aplikasi = new JPanel(Pengaturan);
+        Sistem.add(Aplikasi);
+        userData = new UserData((3000 + new Random().nextInt(5001)) * 1000);
+        ListTransaksi = new ArrayList<>();
+
+        JPanel LogInPanel = SistemUntukLogIn();
+        Aplikasi.add(LogInPanel, "LogIn");
+
+        JPanel BankPanel = SistemUntukBank();
+        Aplikasi.add(BankPanel, "Bank");
+
+        Sistem.setSize(720, 480);
+        Sistem.setResizable(false);
+        Sistem.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        Sistem.getContentPane().setBackground(Color.lightGray);
+        ImageIcon image = new ImageIcon("UNDIP.jpg");
+        Sistem.setIconImage(image.getImage());
+
+        Sistem.setVisible(true);
+    }
+
+    private JPanel SistemUntukLogIn() {
+        JPanel PanelLogIn = new JPanel();
+        PanelLogIn.setLayout(null);
+        PanelLogIn.setBackground(Color.LIGHT_GRAY);
+
+        JLabel LabelUsername = new JLabel("5 digit akhir NIM: ");
+        LabelUsername.setBounds(115, 100, 300, 20);
+        JLabel LabelPassword = new JLabel("Password: ");
+        LabelPassword.setBounds(150, 150, 300, 20);
+        PanelLogIn.add(LabelUsername);
+        PanelLogIn.add(LabelPassword);
+
+        UserUsername = new JTextField();
+        UserUsername.setBounds(220, 100, 300, 20);
+        UserPassword = new JPasswordField();
+        UserPassword.setBounds(220, 150, 300, 20);
+        PanelLogIn.add(UserUsername);
+        PanelLogIn.add(UserPassword);
+
+        JButton LogIn = new JButton("Log In");
+        LogIn.setBounds(220, 250, 300, 20);
+        LogIn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String username = UserUsername.getText();
+                String password = new String(UserPassword.getPassword());
+                if (username.matches("\\d{5}") && password.equalsIgnoreCase(Password)) {
+                    loggedInUsername = username;
+                    loggedInPassword = password;
+                    refreshSaldo();
+                    Pengaturan.show(Aplikasi, "Bank");
+                } else {
+                    JOptionPane.showMessageDialog(Sistem, "Password atau NIM anda salah", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        PanelLogIn.add(LogIn);
+
+        return PanelLogIn;
+    }
+
+    private JPanel SistemUntukBank() {
+        JPanel PanelBank = new JPanel();
+        PanelBank.setLayout(null);
+        PanelBank.setBackground(Color.LIGHT_GRAY);
+
+        Aplikasi.add(SistemUntukSaldo(), "Saldo");
+        Aplikasi.add(SistemUntukDividen(), "Dividen");
+        Aplikasi.add(SistemUntukTransfer(), "Transfer");
+        Aplikasi.add(SistemUntukDeposit(), "Deposit");
+        Aplikasi.add(SistemUntukMutasi(), "Mutasi");
+
+        JButton LihatUang = new JButton("Info Saldo");
+        LihatUang.setBounds(280, 50, 150, 50);
+        LihatUang.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Saldo");
+            }
+        });
+        PanelBank.add(LihatUang);
+
+        JButton LihatMutasi = new JButton("Info Mutasi");
+        LihatMutasi.setBounds(280,125,150,50);
+        LihatMutasi.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Mutasi");
+            }
+        });
+        PanelBank.add(LihatMutasi);
+
+        JButton LihatDividen = new JButton("Info Dividen");
+        LihatDividen.setBounds(280, 200, 150, 50);
+        LihatDividen.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Dividen");
+            }
+        });
+        PanelBank.add(LihatDividen);
+
+        JButton TombolTransfer = new JButton("Transfer Uang");
+        TombolTransfer.setBounds(280, 275, 150, 50);
+        TombolTransfer.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Transfer");
+            }
+        });
+        PanelBank.add(TombolTransfer);
+
+        JButton TombolDeposit = new JButton("Deposit Uang");
+        TombolDeposit.setBounds(280, 350, 150, 50);
+        TombolDeposit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Deposit");
+            }
+        });
+        PanelBank.add(TombolDeposit);
+        return PanelBank;
+    }
+
+    private JPanel SistemUntukSaldo() {
+        JPanel PanelSaldo = new JPanel();
+        PanelSaldo.setLayout(null);
+        PanelSaldo.setBackground(Color.LIGHT_GRAY);
+
+        JLabel LabelSaldo = new JLabel("Info Saldo Anda:");
+        LabelSaldo.setBounds(300, 50, 100, 30);
+        PanelSaldo.add(LabelSaldo);
+
+        InfoUangPengguna = new JTextArea();
+        InfoUangPengguna.setBounds(300, 100, 100, 50);
+        InfoUangPengguna.setEditable(false);
+        refreshSaldo();
+        PanelSaldo.add(InfoUangPengguna);
+
+        JButton Back = new JButton("Kembali");
+        Back.setBounds(300, 250, 100, 50);
+        Back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Bank");
+            }
+        });
+        PanelSaldo.add(Back);
+
+        return PanelSaldo;
+    }
+
+    private void refreshSaldo() {
+        InfoUangPengguna.setText(
+                "Username: " + loggedInUsername + "\n" + "Password: " + loggedInPassword + "\n" + "Saldo: Rp" + userData.getSaldo());
+    }
+
+    private JPanel SistemUntukMutasi() {
+        JPanel PanelMutasi = new JPanel();
+        PanelMutasi.setLayout(null);
+        PanelMutasi.setBackground(Color.LIGHT_GRAY);
+
+        JLabel LabelMutasi = new JLabel();
+        LabelMutasi.setText("Riwayat Mutasi Rekening");
+        LabelMutasi.setBounds(275,50,150,30);
+        PanelMutasi.add(LabelMutasi);
+
+        MutasiRekening = new JTextArea();
+        MutasiRekening.setBounds(200,100,300,200);
+        MutasiRekening.setEditable(false);
+        PanelMutasi.add(MutasiRekening);
+
+        JButton Back = new JButton("Kembali");
+        Back.setBounds(300, 350, 100, 50);
+        Back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Bank");
+            }
+        });
+        PanelMutasi.add(Back);
+
+        return PanelMutasi;
+    }
+
+    private void refreshMutasi() {
+        StringBuilder RiwayatMutasi = new StringBuilder();
+        for(String Transaksi : ListTransaksi) {
+            RiwayatMutasi.append(Transaksi).append("\n");
+        }
+            MutasiRekening.setText(RiwayatMutasi.toString());
+    }
+
+    private JPanel SistemUntukDividen() {
+        JPanel PanelDividen = new JPanel();
+        PanelDividen.setLayout(null);
+        PanelDividen.setBackground(Color.LIGHT_GRAY);
+
+        JLabel LabelDividen = new JLabel("Kalkulasi Dividen");
+        LabelDividen.setBounds(300, 50, 200, 30);
+        PanelDividen.add(LabelDividen);
+
+        JLabel LabelHargaSaham = new JLabel("Harga Saham:");
+        LabelHargaSaham.setBounds(150, 100, 150, 30);
+        PanelDividen.add(LabelHargaSaham);
+
+        JTextField HargaSaham = new JTextField();
+        HargaSaham.setBounds(300, 100, 150, 30);
+        PanelDividen.add(HargaSaham);
+
+        JLabel LabelJumlahStok = new JLabel("Jumlah Stok:");
+        LabelJumlahStok.setBounds(150, 140, 150, 30);
+        PanelDividen.add(LabelJumlahStok);
+
+        JTextField JumlahStok = new JTextField();
+        JumlahStok.setBounds(300, 140, 150, 30);
+        PanelDividen.add(JumlahStok);
+
+        JLabel LabelPersenDividen = new JLabel("Persen Dividen:");
+        LabelPersenDividen.setBounds(150, 180, 150, 30);
+        PanelDividen.add(LabelPersenDividen);
+
+        JTextField PersenDividen = new JTextField();
+        PersenDividen.setBounds(300, 180, 150, 30);
+        PanelDividen.add(PersenDividen);
+
+        JButton Hitung = new JButton("Hitung");
+        Hitung.setBounds(150, 220, 100, 30);
+        Hitung.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    double hargaSaham = Double.parseDouble(HargaSaham.getText());
+                    double jumlahStok = Double.parseDouble(JumlahStok.getText());
+                    double persenDividen = Double.parseDouble(PersenDividen.getText());
+
+                    double totalDividen = (hargaSaham * jumlahStok * persenDividen) / 100;
+
+                    double pajak = totalDividen * 0.10;
+                    double totalDividenSetelahPajak = totalDividen - pajak;
+
+                    JOptionPane.showMessageDialog(PanelDividen, "Total Dividen Setelah Pajak: " + totalDividenSetelahPajak);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(PanelDividen, "Input tidak valid. Silakan masukkan angka yang benar.");
+                }
+            }
+        });
+        PanelDividen.add(Hitung);
+
+
+        JButton Back = new JButton("Kembali");
+        Back.setBounds(300, 300, 100, 50);
+        Back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Bank");
+            }
+        });
+        PanelDividen.add(Back);
+
+        return PanelDividen;
+    }
+
+    private JPanel SistemUntukTransfer() {
+        JPanel PanelTransfer = new JPanel();
+        PanelTransfer.setLayout(null);
+        PanelTransfer.setBackground(Color.LIGHT_GRAY);
+
+        JLabel LabelTransfer = new JLabel("Transfer Uang");
+        LabelTransfer.setBounds(310, 50, 200, 30);
+        PanelTransfer.add(LabelTransfer);
+
+        JTextField TextTransfer = new JTextField();
+        TextTransfer.setBounds(200, 100, 300, 20);
+        PanelTransfer.add(TextTransfer);
+
+        JButton Transfer = new JButton("Transfer");
+        Transfer.setBounds(300, 150, 100, 50);
+        Transfer.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int JumlahTransfer = Integer.parseInt(TextTransfer.getText());
+                    if (JumlahTransfer > userData.getSaldo()) {
+                        JOptionPane.showMessageDialog(PanelTransfer, "Saldo anda tidak cukup.");
+                    } else {
+                        userData.setSaldo(userData.getSaldo() - JumlahTransfer);
+                        ListTransaksi.add("Tansfer: Rp" + JumlahTransfer);
+                        refreshSaldo();
+                        refreshMutasi();
+                        JOptionPane.showMessageDialog(PanelTransfer, "Berhasil Di Transfer!");
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(PanelTransfer, "Input tidak valid. Masukkan angka.");
+                }
+            }
+        });
+        PanelTransfer.add(Transfer);
+
+        JButton Back = new JButton("Kembali");
+        Back.setBounds(300, 250, 100, 50);
+        Back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Bank");
+            }
+        });
+        PanelTransfer.add(Back);
+
+        return PanelTransfer;
+    }
+
+    private JPanel SistemUntukDeposit() {
+        JPanel PanelDeposit = new JPanel();
+        PanelDeposit.setLayout(null);
+        PanelDeposit.setBackground(Color.LIGHT_GRAY);
+
+        JLabel LabelDeposit = new JLabel("Deposit Uang");
+        LabelDeposit.setBounds(315, 50, 200, 30);
+        PanelDeposit.add(LabelDeposit);
+
+        JTextField TextDeposit = new JTextField();
+        TextDeposit.setBounds(200, 100, 300, 20);
+        PanelDeposit.add(TextDeposit);
+
+        JButton KalkulasiDeposit = new JButton("Deposit");
+        KalkulasiDeposit.setBounds(300, 150, 100, 50);
+        KalkulasiDeposit.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int JumlahDeposit = Integer.parseInt(TextDeposit.getText());
+                    userData.setSaldo(userData.getSaldo() + JumlahDeposit);
+                    ListTransaksi.add("Deposit: Rp" + JumlahDeposit);
+                    refreshSaldo();
+                    refreshMutasi();
+                    JOptionPane.showMessageDialog(PanelDeposit, "Berhasil Deposit!");
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(PanelDeposit, "Input tidak valid. Masukkan angka.");
+                }
+            }
+        });
+        PanelDeposit.add(KalkulasiDeposit);
+
+        JButton Back = new JButton("Kembali");
+        Back.setBounds(300, 250, 100, 50);
+        Back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Pengaturan.show(Aplikasi, "Bank");
+            }
+        });
+        PanelDeposit.add(Back);
+
+        return PanelDeposit;
+    }
+
+    public static void main(String[] args) {
+        SistemAplikasi app = new SistemAplikasi();
+        app.PenyetinganSistem();
+    }
+}
